@@ -1,0 +1,178 @@
+<div id="root"></div>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  min-height: 100vh;
+}
+
+.slide-up {
+  transform: translateY(-100vh);
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.h-vh-15 {
+  height: 15vh;
+}
+
+.h-vh-70 {
+  height: 70vh;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}const { useState } = React;
+
+// If Lucide icons don't load, we'll use emoji fallbacks
+const IconFallbacks = {
+  Menu: () => <span style={{fontSize: '24px'}}>☰</span>,
+  User: () => <span style={{fontSize: '24px'}}>👤</span>,
+  ArrowUpCircle: () => <span style={{fontSize: '24px'}}>⬆️</span>
+};
+
+// Try to use Lucide icons, fallback to emoji if not available
+const Icons = {
+  Menu: lucide?.Menu || IconFallbacks.Menu,
+  User: lucide?.User || IconFallbacks.User,
+  ArrowUpCircle: lucide?.ArrowUpCircle || IconFallbacks.ArrowUpCircle
+};
+
+const YouQuizMobile = () => {
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [touchEndY, setTouchEndY] = useState(0);
+  const [swipeAnimation, setSwipeAnimation] = useState('');
+
+  const handleTouchStart = (e) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartY - touchEndY > 100) {
+      setSwipeAnimation('slide-up');
+      setTimeout(() => {
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setSwipeAnimation('');
+      }, 300);
+    }
+  };
+
+  const handleAnswerClick = (index) => {
+    setSelectedAnswer(index);
+    setShowExplanation(true);
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen max-w-md mx-auto bg-white relative overflow-hidden">
+      {/* Header - 15% */}
+      <div className="h-vh-15 relative bg-white">
+        <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-between px-4 bg-white z-10">
+          <Icons.Menu className="w-6 h-6" />
+          <span className="font-bold text-lg">YouQuiz.net</span>
+          <Icons.User className="w-6 h-6" />
+        </div>
+        
+        <div className="w-full h-full pt-12 bg-white">
+          <img 
+            src="https://via.placeholder.com/400/100" 
+            alt="Quiz Banner"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Main Content - 70% */}
+      <div 
+        className={`h-vh-70 p-4 bg-white transition-transform duration-300 ${swipeAnimation}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Category Info */}
+        <div className="text-sm text-gray-600 mb-4">
+          Mathematics / Grade 10
+        </div>
+
+        {/* Question */}
+        <div className="mb-6">
+          <div className="text-lg font-bold mb-4">
+            A Multiple-choice question with incorrect answer below?
+          </div>
+
+          {/* Answer Options */}
+          <div className="space-y-3">
+            {['Option A: First choice', 
+              'Option B: Second choice', 
+              'Option C: Third choice', 
+              'Option D: Fourth choice'].map((option, index) => (
+              <div
+                key={index}
+                onClick={() => handleAnswerClick(index)}
+                className={`p-3 border rounded-lg text-sm cursor-pointer
+                  ${selectedAnswer === index && index === 1 ? 'bg-green-100 border-green-500' : ''}
+                  ${selectedAnswer === index && index !== 1 ? 'bg-red-100 border-red-500' : ''}
+                  ${selectedAnswer === null ? 'hover:bg-gray-50' : ''}
+                `}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Explanation */}
+        {showExplanation && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
+            <h3 className="font-bold mb-2">Explanation:</h3>
+            <p className="text-gray-700">
+              Here's why this answer is correct. The explanation provides detailed context...
+            </p>
+            <div className="mt-3 flex gap-3 text-sm">
+              <a href="#" className="text-blue-600">Google</a>
+              <a href="#" className="text-blue-600">Bing</a>
+            </div>
+          </div>
+        )}
+
+        {/* Progress Stats */}
+        <div className="mt-4 flex justify-between text-xs text-gray-600 border-t pt-3">
+          <span>45/2000</span>
+          <span>Correct: 38</span>
+          <span>84%</span>
+        </div>
+
+        {/* Swipe Indicator */}
+        <div className="flex flex-col items-center mt-6 text-gray-400">
+          <Icons.ArrowUpCircle className="w-8 h-8 animate-bounce" />
+          <span className="text-sm mt-1">Swipe up for next question</span>
+        </div>
+      </div>
+
+      {/* Footer Ads - 15% */}
+      <div className="h-vh-15 bg-gray-100 flex items-center justify-center">
+        <div className="text-sm text-gray-400">Advertisement Space</div>
+      </div>
+    </div>
+  );
+};
+
+// Render the app
+ReactDOM.render(<YouQuizMobile />, document.getElementById('root'));
